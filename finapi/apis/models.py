@@ -7,14 +7,16 @@ class CBNData(models.Model):
     treasury_bill_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     bond_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     interest_rate = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)  # Auto-update timestamp
 
     class Meta:
-        ordering = ['-date']  # Show latest data first
+        ordering = ['-date']
         verbose_name = "CBN Data"
         verbose_name_plural = "CBN Data Entries"
 
     def __str__(self):
         return f"CBN Data - {self.date}"
+
 
 class UserFinancialProfile(models.Model):
     INVESTMENT_GOALS = [
@@ -39,7 +41,7 @@ class UserFinancialProfile(models.Model):
     def __str__(self):
         return f"{self.full_name} - {self.investment_goal} Investment"
 
-# Define investment types (Treasury Bills, Bonds, Stocks, etc.)
+
 class InvestmentType(models.Model):
     INVESTMENT_CHOICES = [
         ("treasury_bill", "Treasury Bill"),
@@ -49,19 +51,19 @@ class InvestmentType(models.Model):
         ("stock", "Stock Market"),
     ]
 
-    name = models.CharField(max_length=50, choices=INVESTMENT_CHOICES, unique=True)
+    type_key = models.CharField(max_length=50, choices=INVESTMENT_CHOICES, unique=True)
+    name = models.CharField(max_length=50)  # Store actual name
     description = models.TextField()
 
     class Meta:
-        db_table = "investment_types"  # Custom table name
+        db_table = "investment_types"
         verbose_name = "Investment Type"
         verbose_name_plural = "Investment Types"
 
     def __str__(self):
-        return self.get_name_display()
+        return self.name
 
 
-# Store investment calculations
 class InvestmentCalculation(models.Model):
     user = models.ForeignKey(UserFinancialProfile, on_delete=models.CASCADE)
     investment_type = models.ForeignKey(InvestmentType, on_delete=models.CASCADE)
@@ -70,4 +72,4 @@ class InvestmentCalculation(models.Model):
     calculation_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.user.user_name} - {self.investment_type} Return on {self.calculation_date}"
+        return f"{self.user.full_name} - {self.investment_type} Return on {self.calculation_date}"
