@@ -7,57 +7,67 @@
     <title>Investment Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-6">
+<body class="bg-black text-white p-6">
 
-    <div class="max-w-3xl mx-auto bg-white p-6 shadow-md rounded-lg">
-        <h1 class="text-2xl font-bold mb-4">Investment Calculator</h1>
+    <div class="max-w-3xl mx-auto bg-gray-900 p-6 shadow-lg rounded-lg">
+        <h1 class="text-3xl font-bold text-center mb-6">Investor Brain</h1>
 
         <!-- Display CBN Data -->
-        <h2 class="text-xl font-semibold">CBN Data</h2>
-        <ul id="cbn-data-list" class="mb-4"></ul>
+        <h2 class="text-xl font-semibold mb-2">📊 Current CBN Rates</h2>
+        <ul id="cbn-data-list" class="mb-4 text-lg"></ul>
 
         <!-- Investment Selection -->
-        <label for="investment-type" class="block text-sm font-medium">Choose Investment Type:</label>
-        <select id="investment-type" class="w-full p-2 border rounded-md mb-4">
+        <label for="investment-type" class="block text-sm font-medium">💰 Choose Investment Type:</label>
+        <select id="investment-type" class="w-full p-2 border rounded-md bg-gray-800 text-white mb-4">
             <option value="">Select Investment</option>
         </select>
 
         <!-- Amount Input -->
-        <label for="amount" class="block text-sm font-medium">Enter Investment Amount:</label>
-        <input type="number" id="amount" class="w-full p-2 border rounded-md mb-4" placeholder="Enter amount">
+        <label for="amount" class="block text-sm font-medium">💵 Enter Investment Amount:</label>
+        <input type="number" id="amount" class="w-full p-2 border rounded-md bg-gray-800 text-white mb-4" placeholder="Enter amount">
 
         <!-- Interest Calculation -->
-        <button onclick="calculateInterest()" class="bg-blue-500 text-white px-4 py-2 rounded-md">Calculate Interest</button>
+        <button onclick="calculateInterest()" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md w-full">
+            Calculate Interest
+        </button>
 
-        <h2 class="mt-4 text-lg font-bold">Monthly Interest: <span id="interest-result">0</span></h2>
+        <h2 class="mt-4 text-lg font-bold">📈 Monthly Interest: <span id="interest-result">0</span></h2>
     </div>
 
     <script>
         // Fetch CBN Data
         async function fetchCBNData() {
-            const response = await fetch('/cbn-data/');
-            const data = await response.json();
-            let list = document.getElementById('cbn-data-list');
-            list.innerHTML = "";
-            data.forEach(item => {
-                let li = document.createElement('li');
-                li.textContent = `${item.name}: ${item.value}`;
-                list.appendChild(li);
-            });
+            try {
+                const response = await fetch('/api/cbn-data/');
+                const data = await response.json();
+                let list = document.getElementById('cbn-data-list');
+                list.innerHTML = "";
+                Object.keys(data).forEach(key => {
+                    let li = document.createElement('li');
+                    li.textContent = `${key.replace("_", " ")}: ${data[key]}%`;
+                    list.appendChild(li);
+                });
+            } catch (error) {
+                console.error("Error fetching CBN data:", error);
+            }
         }
 
         // Fetch Investment Types
         async function fetchInvestmentTypes() {
-            const response = await fetch('/investment-type/');
-            const data = await response.json();
-            let select = document.getElementById('investment-type');
-            select.innerHTML = `<option value="">Select Investment</option>`;
-            data.forEach(item => {
-                let option = document.createElement('option');
-                option.value = item.interest_rate;  // Store interest rate in value
-                option.textContent = item.name;
-                select.appendChild(option);
-            });
+            try {
+                const response = await fetch('/api/investment-type/');
+                const data = await response.json();
+                let select = document.getElementById('investment-type');
+                select.innerHTML = `<option value="">Select Investment</option>`;
+                data.forEach(item => {
+                    let option = document.createElement('option');
+                    option.value = item.interest_rate;  // Store interest rate in value
+                    option.textContent = item.name;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error fetching investment types:", error);
+            }
         }
 
         // Calculate Interest
@@ -70,7 +80,7 @@
                 return;
             }
 
-            let monthlyInterest = (amount * interestRate) / 100;
+            let monthlyInterest = (amount * interestRate) / 100 / 12;
             document.getElementById('interest-result').textContent = monthlyInterest.toFixed(2);
         }
 
